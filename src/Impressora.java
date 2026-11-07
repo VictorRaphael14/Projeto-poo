@@ -8,17 +8,16 @@ public class Impressora {
         String opcao;
         do {
             System.out.println("\n--- MENU ---");
-            System.out.println("1 - Configurar conexão");
-            System.out.println("2 - Abrir conexão");
-            System.out.println("3 - Fechar conexão");
-            System.out.println("4 - Imprimir texto");
-            System.out.println("5 - Imprimir QR Code");
-            System.out.println("6 - Imprimir código de barras");
-            System.out.println("7 - Imprimir XML SAT");
-            System.out.println("8 - Imprimir XML de cancelamento SAT");
-            System.out.println("9 - Abrir gaveta");
-            System.out.println("10 - Abrir gaveta elgin");
-            System.out.println("11 - Sinal sonoro (bip)");
+            System.out.println("1 - Abrir conexão");
+            System.out.println("2 - Fechar conexão");
+            System.out.println("3 - Imprimir texto");
+            System.out.println("4 - Imprimir QR Code");
+            System.out.println("5 - Imprimir código de barras");
+            System.out.println("6 - Imprimir XML SAT");
+            System.out.println("7 - Imprimir XML de cancelamento SAT");
+            System.out.println("8 - Abrir gaveta");
+            System.out.println("9 - Abrir gaveta elgin");
+            System.out.println("10 - Sinal sonoro (bip)");
             System.out.println("EXTRA - Avançar papel, ver status do papel");
             System.out.println("0 - Sair");
             System.out.print("Digite a opção desejada: ");
@@ -27,40 +26,38 @@ public class Impressora {
 
             switch (opcao) {
                 case "1":
-                    // Chame o método de configurar conexão aqui
-                    break;
-                case "2":
                     abrirConexao();
                     break;
-                case "3":
+                case "2":
                     fecharConexao();
                     break;
+                case "3":
+                    imprimirTexto(ler);
+                    break;
                 case "4":
-                    imprimirTexto();
+                    imprimirQRcode(ler);
                     break;
                 case "5":
-                    imprimirQRcode();
-                    break;
-                case "6":
                     imprimirCodigoDeBarras();
                     break;
-                case "7":
+                case "6":
                     imprimirXMLSAT();
                     break;
-                case "8":
+                case "7":
                     imprimirXMLcancelSAT();
                     break;
-                case "9":
+                case "8":
                     abrirGaveta();
                     break;
-                case "10":
+                case "9":
                     abrirGavetaElgin();
                     break;
-                case "11":
+                case "10":
                     sinalSonoro();
                     break;
                 case "EXTRA":
-                    // Chame o método de sinal sonoro aqui
+                    avancarPapel(ler);
+                    verStatus(ler);
                     break;
                 case "0":
                     System.out.println("Saíndo do programa...");
@@ -83,10 +80,10 @@ public class Impressora {
         int tipo = 0;
         String modelo = "";
         String conexao = "";
-        int parametro = 0;
+        int param = 0;
 
         try {
-            int retorno = ImpressoraDLL.INSTANCE.AbreConexaoImpressora(tipo, modelo, conexao, parametro);
+            int retorno = ImpressoraDLL.INSTANCE.AbreConexaoImpressora(tipo, modelo, conexao, param);
             if (retorno == 0) {
                 conexaoAberta = true;
                 System.out.println("Conexão aberta com sucesso! Escolha a opção 1 para configurá-la");
@@ -111,12 +108,27 @@ public class Impressora {
     }
 
     //Método para imprimir um texto
-    public void imprimirTexto(){
-        String dados = "";
-        int posicao = 0;
-        int estilo = 0;
-        int tamanho = 0;
+    public void imprimirTexto(Scanner ler){
+        String dados;
+        int posicao;
+        int estilo;
+        int tamanho;
 
+        try{
+            System.out.println("Digite o texto que deseja imprimir: ");
+            dados = ler.nextLine();
+            System.out.println("Digite a posição (0 - esquerda, 1 - centro, 2 - direita): ");
+            posicao = ler.nextInt();
+            System.out.println("Digite o estilo do texto (0 - fonte A, 1 - fonte B, 2 - sublinhado, 4 - invertido, 8 - negrito): ");
+            estilo = ler.nextInt();
+            System.out.println("Digite o tamanho do texto (0 - normal, 1 a 7 - altura maior): ");
+            tamanho = ler.nextInt();
+            ler.nextLine();
+        }
+        catch(InputMismatchException e){
+            System.out.println("Tipo de dado inválido!");
+            return;
+        }
         int retorno = ImpressoraDLL.INSTANCE.ImpressaoTexto(dados, posicao, estilo, tamanho);
 
         if (retorno == 0) {
@@ -127,10 +139,24 @@ public class Impressora {
     }
 
     //Método para imprimir um QRcode
-    public void imprimirQRcode(){
-        String dados = "";
-        int tamanho = 0;
-        int nivelCorrecao = 0;
+    public void imprimirQRcode(Scanner ler){
+        String dados;
+        int tamanho;
+        int nivelCorrecao;
+
+        try{
+            System.out.println("Digite o conteúdo do QRCode: ");
+            dados = ler.nextLine();
+            System.out.println("Digite o tamanho (1 a 6): ");
+            tamanho = ler.nextInt();
+            System.out.println("Digite o nível de correção (1 a 4 - quanto maior, mais resistente a falhas): ");
+            nivelCorrecao = ler.nextInt();
+            ler.nextLine();
+        }
+        catch(InputMismatchException e){
+            System.out.println("Tipo de dado inválido!");
+            return;
+        }
 
         int retorno = ImpressoraDLL.INSTANCE.ImpressaoQRCode(dados, tamanho, nivelCorrecao);
 
@@ -221,6 +247,48 @@ public class Impressora {
             System.out.println("Bip!");
         } else {
             System.out.println("Erro no sinal sonoro. Código: " + retorno);
+        }
+    }
+
+    public void avancarPapel(Scanner ler){
+        int linhas;
+
+        try{
+            System.out.println("Quantas linhas deseja avançar: ");
+            linhas = ler.nextInt();
+            ler.nextLine();
+        } catch (InputMismatchException e) {
+            System.out.println("Tipo de dado inválido!");
+            return;
+        }
+
+        int retorno = ImpressoraDLL.INSTANCE.AvancaPapel(linhas);
+
+        if (retorno == 0) {
+            System.out.println("Avançando papel!");
+        } else {
+            System.out.println("Erro ao avançar o papel. Código: " + retorno);
+        }
+    }
+    public void verStatus(Scanner ler){
+        int param;
+
+        try{
+            System.out.println("Escolha um parâmetro (1 - Gaveta, 2 - Tampa, 3 - Papel, 5 - Geral. Para o param 3: 5 - Tem papel, 6 - Acabando, 7 - Sem papel): ");
+            param = ler.nextInt();
+            ler.nextLine();
+        }
+        catch (InputMismatchException e){
+            System.out.println("Tipo de dado inválido!");
+            return;
+        }
+
+        int retorno = ImpressoraDLL.INSTANCE.StatusImpressora(param);
+
+        if (retorno == 0) {
+            System.out.println("Status da impressora!");
+        } else {
+            System.out.println("Erro ao ver status da impressora. Código: " + retorno);
         }
     }
 }
