@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 public class Main {
     public static void main(String[] args) {
         Scanner ler = new Scanner(System.in);
+
         //Cria um objeto Usuario
         Usuario usuario1 = new Usuario();
 
